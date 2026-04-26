@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake.io Arcade</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="p-4 flex justify-between items-center bg-slate-950 border-b border-slate-800">
+        <div class="font-black text-xl text-green-400 uppercase tracking-widest cursor-pointer" onclick="navigate('game')">Snake.io</div>
+        <div class="flex gap-4 items-center">
+            <button onclick="navigate('leaderboard')" class="text-yellow-500 hover:text-yellow-400 flex items-center gap-1 font-bold text-sm">
+                <i data-lucide="trophy" class="w-4 h-4"></i> Leaders
+            </button>
+            <div id="nav-user" class="text-sm font-bold text-slate-400 flex gap-4 ml-4 pl-4 border-l border-slate-800">
+                </div>
+        </div>
+    </nav>
+
+    <main id="view-game" class="view active flex-1 flex-col items-center justify-center py-8 px-4">
+        <div id="arcade-bezel" class="relative p-6 md:p-10 rounded-[2.5rem] border-[12px] border-b-[24px]">
+            <div class="w-full flex justify-between items-center mb-6 px-4">
+                <div class="w-8"></div> <div class="text-center">
+                    <span class="uppercase text-xs font-black text-slate-600 tracking-widest">CLASSIC MODE</span>
+                </div>
+                <div class="flex gap-3 text-slate-600"><i data-lucide="volume-2"></i><i data-lucide="power"></i></div>
+            </div>
+
+            <div id="arcade-screen" class="relative bg-slate-950 p-3 rounded-2xl border-4">
+                <div class="flex justify-between mb-4 px-2 text-slate-300 font-bold">
+                    <div id="game-player">GUEST</div>
+                    <div id="game-score" class="text-2xl text-green-400">0000</div>
+                </div>
+                
+                <div id="game-canvas-container" class="bg-slate-900 w-[400px] h-[400px] relative overflow-hidden flex items-center justify-center">
+                    <span class="text-slate-600 font-bold">Game renders here</span>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-between w-full px-4">
+                <div class="d-pad relative w-32 h-32">
+                    <button class="up" id="ctrl-up">▲</button>
+                    <button class="down" id="ctrl-down">▼</button>
+                    <button class="left" id="ctrl-left">◀</button>
+                    <button class="right" id="ctrl-right">▶</button>
+                </div>
+                <div class="flex gap-6">
+                    <button id="ctrl-pause" class="action-btn pause"><i data-lucide="pause"></i></button>
+                    <button id="ctrl-reset" class="action-btn reset"><i data-lucide="rotate-ccw"></i></button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <main id="view-login" class="view flex-1 items-center justify-center">
+        </main>
+
+    <main id="view-register" class="view flex-1 items-center justify-center">
+        </main>
+
+    <main id="view-leaderboard" class="view flex-1 flex-col max-w-4xl mx-auto w-full py-8 space-y-8 px-4">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-6">
+            <h1 class="text-4xl font-black text-white flex items-center gap-4">
+                <i data-lucide="trophy" class="text-yellow-500"></i> Leaderboard
+            </h1>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl">
+            <table class="w-full text-left">
+                <thead class="bg-slate-950/50 text-slate-400 text-sm uppercase font-bold">
+                    <tr>
+                        <th class="px-6 py-4">Rank</th>
+                        <th class="px-6 py-4">Player</th>
+                        <th class="px-6 py-4 text-right">Score</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
