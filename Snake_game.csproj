@@ -1,0 +1,123 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\DroidSansMono.ttf" />
+    <None Remove="Assets\Empty.png" />
+	  
+    <None Remove="Assets\Snake\DeadBody.png" />
+    <None Remove="Assets\Snake\DeadHead.png" />
+	<None Remove="Assets\Snake\Body.png" />
+    <None Remove="Assets\Snake\Head.png" />
+	<None Remove="Assets\Snake\Red_Head.png" />
+	<None Remove="Assets\Snake\Red_Body.png" />
+	<None Remove="Assets\Snake\Red_DeadHead.png" />
+	<None Remove="Assets\Snake\Red_DeadBody.png" />
+	<None Remove="Assets\Snake\Yellow_Head.png" />
+	<None Remove="Assets\Snake\Yellow_Body.png" />
+	<None Remove="Assets\Snake\Yellow_DeadHead.png" />
+	<None Remove="Assets\Snake\Yellow_DeadBody.png" />
+	<None Remove="Assets\Snake\Orange_Head.png" />
+	<None Remove="Assets\Snake\Orange_Body.png" />
+	<None Remove="Assets\Snake\Orange_DeadHead.png" />
+	<None Remove="Assets\Snake\Orange_DeadBody.png" />
+	<None Remove="Assets\Snake\Blue_Head.png" />
+	<None Remove="Assets\Snake\Blue_Body.png" />
+	<None Remove="Assets\Snake\Blue_DeadHead.png" />
+	<None Remove="Assets\Snake\Blue_DeadBody.png" />
+	<None Remove="Assets\Snake\Purple_Head.png" />
+	<None Remove="Assets\Snake\Purple_Body.png" />
+	<None Remove="Assets\Snake\Purple_DeadHead.png" />
+	<None Remove="Assets\Snake\Purple_DeadBody.png" />
+
+	<None Remove="Assets\Fruit\Food.png" />
+	<None Remove="Assets\Fruit\Kiwi.png" />
+	<None Remove="Assets\Fruit\Apple.png" />
+	<None Remove="Assets\Fruit\Orange.png" />
+	<None Remove="Assets\Fruit\Cherry.png" />
+
+	<None Remove="Assets\NoBorder\Rand_NoBorder.png" />
+	<None Remove="Assets\NoBorder\Cherry_NoBorder.png" />
+	<None Remove="Assets\NoBorder\Food_NoBorder.png" />
+	<None Remove="Assets\NoBorder\Kiwi_NoBorder.png" />
+	<None Remove="Assets\NoBorder\Apple_NoBorder.png" />
+	<None Remove="Assets\NoBorder\Orange_NoBorder.png" />
+	<None Remove="Assets\NoBorder\RedNoBorder.png" />
+	<None Remove="Assets\NoBorder\YellowNoBorder.png" />
+	<None Remove="Assets\NoBorder\OrangeNoBorder.png" />
+	<None Remove="Assets\NoBorder\GreenNoBorder.png" />
+	<None Remove="Assets\NoBorder\BlueNoBorder.png" />
+	<None Remove="Assets\NoBorder\PurpleNoBorder.png" />
+
+	<None Remove="Assets\Light.png" />
+	<None Remove="Assets\Black.png" />
+	<None Remove="Assets\Glasses.png" />
+	<None Remove="Assets\icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<Resource Include="Assets\Empty.png" />
+    <Resource Include="Assets\DroidSansMono.ttf" />
+	  
+    <Resource Include="Assets\Snake\DeadBody.png" />
+    <Resource Include="Assets\Snake\DeadHead.png" />
+    <Resource Include="Assets\Snake\Body.png" />
+    <Resource Include="Assets\Snake\Head.png" />
+	<Resource Include="Assets\Snake\Red_Head.png" />
+	<Resource Include="Assets\Snake\Red_Body.png" />
+	<Resource Include="Assets\Snake\Red_DeadHead.png" />
+	<Resource Include="Assets\Snake\Red_DeadBody.png" />
+	<Resource Include="Assets\Snake\Yellow_Head.png" />
+	<Resource Include="Assets\Snake\Yellow_Body.png" />
+	<Resource Include="Assets\Snake\Yellow_DeadHead.png" />
+	<Resource Include="Assets\Snake\Yellow_DeadBody.png" />
+	<Resource Include="Assets\Snake\Orange_Head.png" />
+	<Resource Include="Assets\Snake\Orange_Body.png" />
+	<Resource Include="Assets\Snake\Orange_DeadHead.png" />
+	<Resource Include="Assets\Snake\Orange_DeadBody.png" />
+	<Resource Include="Assets\Snake\Blue_Head.png" />
+	<Resource Include="Assets\Snake\Blue_Body.png" />
+	<Resource Include="Assets\Snake\Blue_DeadHead.png" />
+	<Resource Include="Assets\Snake\Blue_DeadBody.png" />
+	<Resource Include="Assets\Snake\Purple_Head.png" />
+	<Resource Include="Assets\Snake\Purple_Body.png" />
+	<Resource Include="Assets\Snake\Purple_DeadHead.png" />
+	<Resource Include="Assets\Snake\Purple_DeadBody.png" />
+	  
+	<Resource Include="Assets\Fruit\Food.png" />  
+	<Resource Include="Assets\Fruit\Kiwi.png" />
+	<Resource Include="Assets\Fruit\Apple.png" />
+	<Resource Include="Assets\Fruit\Orange.png" />
+	<Resource Include="Assets\Fruit\Cherry.png" />
+
+	<Resource Include="Assets\NoBorder\Rand_NoBorder.png" />
+	<Resource Include="Assets\NoBorder\Cherry_NoBorder.png" />
+	<Resource Include="Assets\NoBorder\Food_NoBorder.png" />
+	<Resource Include="Assets\NoBorder\Kiwi_NoBorder.png" />
+	<Resource Include="Assets\NoBorder\Apple_NoBorder.png" />
+	<Resource Include="Assets\NoBorder\Orange_NoBorder.png" />
+	<Resource Include="Assets\NoBorder\RedNoBorder.png" />
+	<Resource Include="Assets\NoBorder\YellowNoBorder.png" />
+	<Resource Include="Assets\NoBorder\OrangeNoBorder.png" />
+	<Resource Include="Assets\NoBorder\GreenNoBorder.png" />
+	<Resource Include="Assets\NoBorder\BlueNoBorder.png" />
+	<Resource Include="Assets\NoBorder\PurpleNoBorder.png" />
+
+	<Resource Include="Assets\Light.png" />
+	<Resource Include="Assets\Black.png" />
+    <Resource Include="Assets\Glasses.png" />
+    <Resource Include="Assets\icon.ico" />
+  </ItemGroup>
+
+  <Target Name="RunAfterBuild" AfterTargets="Build" Condition="'$(Configuration)'=='Debug' AND '$(OutputType)'=='Exe'">
+    <Exec Command="&quot;$(TargetPath)&quot;" WorkingDirectory="$(TargetDir)" />
+  </Target>
+
+</Project>
