@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake.io - Arcade Mode</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-950 text-slate-50 min-h-screen flex flex-col font-sans">
+
+  <header class="w-full flex items-center justify-between px-8 py-4 bg-slate-900/50 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
+    <div class="flex items-center gap-3 text-green-500 font-black tracking-widest text-xl cursor-pointer" onclick="navigate('game')">
+      <i data-lucide="gamepad-2" class="w-7 h-7"></i> SNAKE.IO
+    </div>
+    
+    <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-300">
+      <button onclick="navigate('game')" class="hover:text-green-400 flex items-center gap-2 transition-colors">
+        <i data-lucide="gamepad-2" class="w-4 h-4"></i> Play
+      </button>
+      <button onclick="navigate('leaderboard')" class="hover:text-green-400 flex items-center gap-2 transition-colors">
+        <i data-lucide="trophy" class="w-4 h-4"></i> Leaderboard
+      </button>
+      
+      <div class="w-px h-6 bg-slate-800 mx-2"></div>
+
+      <!-- Кнопки для гостей -->
+      <div id="auth-buttons" class="flex items-center gap-4">
+        <button onclick="document.getElementById('modal-login').classList.remove('hidden')" class="hover:text-white flex items-center gap-2 transition-colors">
+          <i data-lucide="log-in" class="w-4 h-4"></i> Увійти
+        </button>
+        <button onclick="document.getElementById('modal-register').classList.remove('hidden')" class="bg-green-500 hover:bg-green-600 text-slate-950 px-5 py-2.5 rounded-md font-bold flex items-center gap-2 transition-colors shadow-lg shadow-green-500/20">
+          <i data-lucide="user-plus" class="w-4 h-4"></i> Зареєструватися
+        </button>
+      </div>
+
+      <!-- Профіль і кнопка Вийти (для авторизованих) -->
+      <div id="user-profile" class="hidden items-center gap-6 text-slate-300">
+        <span class="font-bold text-white uppercase tracking-widest flex items-center gap-2" id="nav-username">
+          <i data-lucide="user" class="w-5 h-5 text-green-400"></i> PLAYER
+        </span>
+        <button onclick="authManager.logout()" class="bg-red-500 hover:bg-red-600 text-slate-950 px-5 py-2.5 rounded-md font-bold flex items-center gap-2 transition-colors shadow-lg shadow-red-500/20">
+          <i data-lucide="log-out" class="w-4 h-4"></i> Вийти з акаунту
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="app" class="flex-1 flex flex-col items-center justify-center w-full p-4 relative">
+
+    <div id="view-leaderboard" class="view hidden flex-1 flex flex-col max-w-4xl mx-auto w-full py-8 space-y-8">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-6">
+        <div>
+          <h1 class="text-4xl font-black text-white flex items-center gap-4"><i data-lucide="trophy" class="w-10 h-10 text-yellow-500"></i> Leaderboard</h1>
+          <p class="text-slate-400 mt-2">The best of the best in Snake.io</p>
+        </div>
+      </div>
+      
+      <!-- ОСЬ ЦИХ КНОПОК НЕ ВИСТАЧАЛО -->
+      <div class="flex gap-3 mb-2">
+        <button onclick="renderLeaderboard('classic')" id="btn-lb-classic" class="lb-tab px-5 py-2.5 rounded-lg font-black text-xs uppercase tracking-widest transition-colors bg-green-500 text-slate-950">Classic</button>
+        <button onclick="renderLeaderboard('blind')" id="btn-lb-blind" class="lb-tab px-5 py-2.5 rounded-lg font-black text-xs uppercase tracking-widest transition-colors bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white">Blind</button>
+        <button onclick="renderLeaderboard('endless')" id="btn-lb-endless" class="lb-tab px-5 py-2.5 rounded-lg font-black text-xs uppercase tracking-widest transition-colors bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white">Endless</button>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl">
+        <table id="leaderboard-table" class="w-full text-left">
+          <thead class="bg-slate-950/50 text-slate-400 text-sm uppercase font-bold tracking-wider">
+            <tr>
+              <th class="px-6 py-4">Player</th>
+              <!-- Колонку перейменовано на Map Size -->
+              <th class="px-4 py-4 text-center">Map Size</th>
+              <th class="px-4 py-4 text-center">Date</th>
+              <th class="px-6 py-4 text-right">Score</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-body" class="divide-y divide-slate-800/50"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="view-game" class="view hidden flex-1 flex flex-col items-center justify-center max-w-4xl mx-auto w-full py-2">
+      
+      <div id="game-bezel" class="relative p-6 md:p-8 rounded-[2.5rem] border-[12px] border-b-[24px] flex flex-col items-center transition-colors duration-500 bg-slate-900 border-slate-800 shadow-[0_0_60px_rgba(255,255,255,0.05)] ring-1 ring-slate-500/20">
+        
+        <div class="w-full flex justify-between items-center mb-6 px-4">
+          <div class="flex flex-col items-center">
+            <div class="flex items-center gap-2 text-slate-500 mb-1">
+              <i data-lucide="gamepad-2" class="w-4 h-4"></i><span class="uppercase tracking-widest text-xs font-black" id="mode-display">CLASSIC MODE</span>
+            </div>
+          </div>
+          <button onclick="gameEngine.showSettings()" class="text-slate-500 hover:text-white transition-colors" title="Settings">
+            <i data-lucide="settings" class="w-6 h-6"></i>
+          </button>
+        </div>
+
+        <div id="game-screen-border" class="relative bg-slate-950 p-3 rounded-2xl border-4 transition-colors duration-500 border-slate-700/50">
+          <div class="absolute inset-0 bg-gradient-to-tr from-white/5 via-transparent to-transparent rounded-xl pointer-events-none z-40"></div>
+          
+          <div class="w-full flex items-center justify-between mb-4 px-2 z-10 relative">
+            <div class="flex flex-col">
+              <span class="text-slate-600 uppercase tracking-widest text-[10px] font-bold">Player</span>
+              <span class="text-slate-300 font-bold" id="game-player-name">GUEST</span>
+            </div>
+            <div class="flex flex-col items-end">
+              <span class="text-slate-600 uppercase tracking-widest text-[10px] font-bold">Score</span>
+              <span id="game-score" class="text-2xl font-black tabular-nums transition-colors duration-500 text-white">0000</span>
+            </div>
+          </div>
+
+          <div id="game-grid" class="grid bg-slate-950 w-[min(75vw,450px)] h-[min(75vw,450px)] relative z-10 border-t border-l border-slate-800/50"></div>
+
+          <div id="overlay-settings" class="absolute inset-0 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center rounded-xl z-50 p-6 overflow-y-auto hidden">
+            <h2 class="text-xl font-black text-white tracking-widest uppercase mb-4 border-b border-slate-800 pb-2 w-full text-center">Game Settings</h2>
+            
+            <div class="grid grid-cols-2 gap-4 w-full max-w-sm mb-6 text-sm">
+              <div class="flex flex-col gap-1">
+                <label class="text-slate-400 font-bold">Map Size</label>
+                <select id="set-map" class="bg-slate-800 text-white p-2 rounded outline-none border border-slate-700">
+                  <option value="10">10 x 10</option>
+                  <option value="15" selected>15 x 15</option>
+                  <option value="20">20 x 20</option>
+                  <option value="25">25 x 25</option>
+                </select>
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-slate-400 font-bold">Mode</label>
+                <select id="set-mode" class="bg-slate-800 text-white p-2 rounded outline-none border border-slate-700">
+                  <option value="classic" selected>Classic</option>
+                  <option value="blind">Blind (Fog)</option>
+                  <option value="endless">Endless (Loop)</option>
+                </select>
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-slate-400 font-bold">Snake Skin</label>
+                <select id="set-snake" class="bg-slate-800 text-white p-2 rounded outline-none border border-slate-700">
+                  <option value="green" selected>Green</option>
+                  <option value="red">Red</option>
+                  <option value="blue">Blue</option>
+                  <option value="yellow">Yellow</option>
+                  <option value="purple">Purple</option>
+                  <option value="orange">Orange</option>
+                </select>
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-slate-400 font-bold">Fruit Skin</label>
+                <select id="set-fruit" class="bg-slate-800 text-white p-2 rounded outline-none border border-slate-700">
+                  <option value="red" selected>Apple (Red)</option>
+                  <option value="orange">Orange (Orange)</option>
+                  <option value="green">Kiwi (Green)</option>
+                  <option value="rose">Cherry (Rose)</option>
+                </select>
+              </div>
+              <div class="flex flex-col gap-1">
+				<label class="text-slate-400 font-bold">Fruit Count</label>
+				<input type="number" id="set-fruit-count" min="1" max="5" value="1" class="bg-slate-800 text-white p-2 rounded outline-none border border-slate-700">
+			  </div>
+              <div class="flex flex-col gap-1">
+				<label class="text-slate-400 font-bold">Delay (Speed)</label>
+				<input type="number" id="set-speed" min="50" max="250" step="10" value="120" class="bg-slate-800 text-white p-2 rounded outline-none border border-slate-700">
+		      </div>
+            </div>
+
+            <button onclick="gameEngine.applySettings()" class="w-full max-w-sm bg-green-600 hover:bg-green-500 text-white p-3 rounded-lg font-bold tracking-widest uppercase transition-colors">
+              Apply & Restart
+            </button>
+            <button onclick="document.getElementById('overlay-settings').classList.add('hidden')" class="w-full max-w-sm mt-2 text-slate-400 hover:text-white p-2 font-bold tracking-widest uppercase text-xs">
+              Cancel
+            </button>
+          </div>
+
+          <div id="overlay-start" class="absolute inset-0 bg-slate-950/80 backdrop-blur-[2px] flex items-center justify-center rounded-xl z-20">
+            <div class="text-center space-y-6">
+              <i data-lucide="gamepad-2" class="w-20 h-20 mx-auto animate-pulse text-slate-400"></i>
+              <div>
+                <h2 class="text-3xl font-black text-white tracking-widest uppercase">Insert Coin</h2>
+                <p class="text-slate-400 mt-2 text-sm uppercase tracking-widest">Press D-pad or Arrow Key to start</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="overlay-gameover" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center rounded-xl z-30">
+            <div class="text-center space-y-6 w-full max-w-sm px-8">
+              <h2 class="text-5xl font-black text-red-500 tracking-widest">GAME OVER</h2>
+              <div class="bg-slate-900/50 p-6 rounded-2xl border border-slate-800">
+                <p class="text-slate-500 uppercase tracking-widest text-xs font-bold mb-1">Final Score</p>
+                <p id="final-score" class="text-6xl font-black tabular-nums text-white">0</p>
+              </div>
+              <button onclick="gameEngine.reset()" class="w-full text-slate-950 p-4 rounded-xl font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all transform hover:scale-105 bg-white">
+                <i data-lucide="rotate-ccw" class="w-6 h-6"></i> Play Again
+              </button>
+            </div>
+          </div>
+
+          <div id="overlay-victory" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center rounded-xl z-30">
+            <div class="text-center space-y-6 w-full max-w-sm px-8">
+              <h2 class="text-5xl font-black text-yellow-400 tracking-widest drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]">VICTORY!</h2>
+              <div class="bg-slate-900/50 p-6 rounded-2xl border border-slate-800">
+                <p class="text-slate-500 uppercase tracking-widest text-xs font-bold mb-1">Final Score</p>
+                <p id="victory-score" class="text-6xl font-black tabular-nums text-white">0</p>
+              </div>
+              <button onclick="gameEngine.reset()" class="w-full text-slate-950 p-4 rounded-xl font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all transform hover:scale-105 bg-yellow-400 hover:bg-yellow-300">
+                <i data-lucide="rotate-ccw" class="w-6 h-6"></i> Play Again
+              </button>
+            </div>
+          </div>
+          
+        </div>
+        
+        <div class="mt-8 flex items-center justify-center w-full px-4 select-none touch-none">
+          <div class="relative w-32 h-32">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-slate-800 rounded-full z-10 shadow-inner border border-slate-700 pointer-events-none"></div>
+            
+            <button onpointerdown="gameEngine.handleJoystick('UP', event)" class="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-12 bg-slate-700 active:bg-slate-500 rounded-t-lg shadow-lg flex items-center justify-center pb-2">
+              <i data-lucide="chevron-up" class="w-5 h-5 text-slate-500"></i>
+            </button>
+            <button onpointerdown="gameEngine.handleJoystick('DOWN', event)" class="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-12 bg-slate-700 active:bg-slate-500 rounded-b-lg shadow-lg flex items-center justify-center pt-2">
+              <i data-lucide="chevron-down" class="w-5 h-5 text-slate-500"></i>
+            </button>
+            <button onpointerdown="gameEngine.handleJoystick('LEFT', event)" class="absolute top-1/2 left-0 -translate-y-1/2 w-12 h-10 bg-slate-700 active:bg-slate-500 rounded-l-lg shadow-lg flex items-center justify-center pr-2">
+              <i data-lucide="chevron-left" class="w-5 h-5 text-slate-500"></i>
+            </button>
+            <button onpointerdown="gameEngine.handleJoystick('RIGHT', event)" class="absolute top-1/2 right-0 -translate-y-1/2 w-12 h-10 bg-slate-700 active:bg-slate-500 rounded-r-lg shadow-lg flex items-center justify-center pl-2">
+              <i data-lucide="chevron-right" class="w-5 h-5 text-slate-500"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="modal-login" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+    <div class="bg-slate-900 p-8 rounded-2xl border border-slate-800 w-full max-w-sm shadow-2xl relative">
+      <h2 class="text-2xl font-black text-white mb-6 uppercase tracking-widest flex items-center gap-2"><i data-lucide="log-in"></i> Вхід</h2>
+      <input type="email" id="login-email" placeholder="Email" class="w-full bg-slate-950 text-white p-3 rounded-lg mb-4 border border-slate-700 outline-none focus:border-green-500">
+      <input type="password" id="login-password" placeholder="Пароль" class="w-full bg-slate-950 text-white p-3 rounded-lg mb-6 border border-slate-700 outline-none focus:border-green-500">
+      <button onclick="authManager.login()" class="w-full bg-green-500 text-slate-950 font-black tracking-widest uppercase p-3 rounded-lg hover:bg-green-400 mb-3 transition-colors">Увійти</button>
+      <!-- Додайте цей блок всередині modal-login та modal-register -->
+      <div class="my-4 flex items-center before:mt-0.5 before:flex-1 before:border-t before:border-slate-700 after:mt-0.5 after:flex-1 after:border-t after:border-slate-700">
+        <p class="mx-4 mb-0 text-center font-semibold text-slate-500 text-sm">АБО</p>
+      </div>
+      <button onclick="authManager.loginWithGoogle()" class="w-full bg-white text-slate-950 font-black tracking-widest uppercase p-3 rounded-lg hover:bg-slate-200 mb-3 transition-colors flex items-center justify-center gap-2">
+        <i data-lucide="mail" class="w-5 h-5"></i> Через Google
+      </button>
+      <button onclick="document.getElementById('modal-login').classList.add('hidden')" class="w-full text-slate-500 hover:text-white p-2 font-bold text-sm tracking-widest uppercase transition-colors">Скасувати</button>
+    </div>
+  </div>
+
+  <div id="modal-register" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+    <div class="bg-slate-900 p-8 rounded-2xl border border-slate-800 w-full max-w-sm shadow-2xl relative">
+      <h2 class="text-2xl font-black text-white mb-6 uppercase tracking-widest flex items-center gap-2"><i data-lucide="user-plus"></i> Реєстрація</h2>
+      <input type="text" id="reg-nickname" placeholder="Ваш Нікнейм" class="w-full bg-slate-950 text-white p-3 rounded-lg mb-4 border border-slate-700 outline-none focus:border-green-500">
+      <input type="email" id="reg-email" placeholder="Email" class="w-full bg-slate-950 text-white p-3 rounded-lg mb-4 border border-slate-700 outline-none focus:border-green-500">
+      <input type="password" id="reg-password" placeholder="Пароль (мін. 6 символів)" class="w-full bg-slate-950 text-white p-3 rounded-lg mb-6 border border-slate-700 outline-none focus:border-green-500">
+      <button onclick="authManager.register()" class="w-full bg-green-500 text-slate-950 font-black tracking-widest uppercase p-3 rounded-lg hover:bg-green-400 mb-3 transition-colors">Створити акаунт</button>
+      <!-- Додайте цей блок всередині modal-login та modal-register -->
+      <div class="my-4 flex items-center before:mt-0.5 before:flex-1 before:border-t before:border-slate-700 after:mt-0.5 after:flex-1 after:border-t after:border-slate-700">
+        <p class="mx-4 mb-0 text-center font-semibold text-slate-500 text-sm">АБО</p>
+      </div>
+      <button onclick="authManager.loginWithGoogle()" class="w-full bg-white text-slate-950 font-black tracking-widest uppercase p-3 rounded-lg hover:bg-slate-200 mb-3 transition-colors flex items-center justify-center gap-2">
+        <i data-lucide="mail" class="w-5 h-5"></i> Через Google
+      </button>
+      <button onclick="document.getElementById('modal-register').classList.add('hidden')" class="w-full text-slate-500 hover:text-white p-2 font-bold text-sm tracking-widest uppercase transition-colors">Скасувати</button>
+    </div>
+  </div>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <script src="game.js"></script>
+  <script src="site.js"></script>
+</body>
+</html>
